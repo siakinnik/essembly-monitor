@@ -24,6 +24,11 @@ else()
     set(CURL_USE_OPENSSL ON CACHE BOOL "" FORCE)
 endif()
 
+file(DOWNLOAD 
+    "https://github.com/nlohmann/json/releases/latest/download/json.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/json.hpp"
+)
+
 include(FetchContent)
 FetchContent_Declare(
   curl
