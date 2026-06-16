@@ -21,12 +21,12 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *s)
 bool Fetch_Status(bool &out_status)
 {
     std::string response;
+    curl_easy_reset(gCurl);
     curl_easy_setopt(gCurl, CURLOPT_URL, apiUrl);
     curl_easy_setopt(gCurl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(gCurl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(gCurl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(gCurl, CURLOPT_TIMEOUT, 5L);
-    curl_easy_reset(gCurl);
 
     if (curl_easy_perform(gCurl) != CURLE_OK)
         return false; // network error & etc.
