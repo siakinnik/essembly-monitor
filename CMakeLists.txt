@@ -36,5 +36,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(curl)
 
-add_executable(essembly_bot main.cpp)
+add_executable(essembly_bot main.cpp telegram.cpp)
 target_link_libraries(essembly_bot PRIVATE libcurl)
