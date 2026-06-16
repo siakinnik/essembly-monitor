@@ -22,7 +22,7 @@ bool Fetch_Status(bool &out_status)
 {
     std::string response;
     curl_easy_reset(gCurl);
-    curl_easy_setopt(gCurl, CURLOPT_URL, apiUrl);
+    curl_easy_setopt(gCurl, CURLOPT_URL, Config::apiUrl);
     curl_easy_setopt(gCurl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(gCurl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(gCurl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -46,8 +46,8 @@ void App_Init()
 {
     curl_global_init(CURL_GLOBAL_ALL);
     gCurl = curl_easy_init();
+    std::cout << "[INIT] Essembly Monitor successfully initialized!" << std::endl;
 }
-
 void App_Update()
 {
     bool current_status = false;
@@ -75,7 +75,7 @@ int main()
     while (true)
     {
         App_Update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(loopDelayMs));
+        std::this_thread::sleep_for(std::chrono::milliseconds(Config::loopDelayMs));
     }
 
     App_Shutdown();
