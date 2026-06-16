@@ -22,7 +22,7 @@ struct Secrets
 } gSecrets;
 
 static CURL *gCurl = nullptr;
-static bool gIsOpen = true;
+static bool gIsOpen = false;
 static Telegram::Bot *gTgBot = nullptr;
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *s)
 {
@@ -161,6 +161,21 @@ void App_Init()
         std::cout << "[INIT] Matrix module skipped (empty config)." << std::endl;
     }
 
+    bool current_status = false;
+    if (Fetch_Status(current_status))
+    {
+        gIsOpen = current_status;
+        std::string statusText = gIsOpen ? "🟢OPEN" : "🔴CLOSED";
+        std::cout << "[SYSTEM] Status changed to: " << statusText << std::endl;
+
+        std::string msg = "*[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
+
+        if (gTgBot)
+        {
+            gTgBot->sendMarkdownMessage(gSecrets.tgChatId, msg);
+        }
+    }
+
     std::cout << "[INIT] Essembly Monitor successfully initialized!" << std::endl;
 }
 
@@ -172,14 +187,14 @@ void App_Update()
         if (current_status != gIsOpen)
         {
             gIsOpen = current_status;
-            std::string statusText = gIsOpen ? "OPEN" : "CLOSED";
+            std::string statusText = gIsOpen ? "🟢OPEN" : "🔴CLOSED";
             std::cout << "[SYSTEM] Status changed to: " << statusText << std::endl;
 
-            std::string msg = "[Essembly] Status changed to: " + statusText;
+            std::string msg = "[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
 
             if (gTgBot)
             {
-                gTgBot->sendMessage(gSecrets.tgChatId, msg);
+                gTgBot->sendMarkdownMessage(gSecrets.tgChatId, msg);
             }
         }
     }
