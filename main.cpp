@@ -9,6 +9,7 @@
 
 #include "constants.hpp"
 #include "telegram.hpp"
+#include "matrix.hpp"
 
 using json = nlohmann::json;
 
@@ -24,6 +25,7 @@ struct Secrets
 static CURL *gCurl = nullptr;
 static bool gIsOpen = false;
 static Telegram::Bot *gTgBot = nullptr;
+static Matrix::Client *gMatrixClient = nullptr;
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *s)
 {
     s->append((char *)contents, size * nmemb);
@@ -154,7 +156,8 @@ void App_Init()
 
     if (!gSecrets.matrixDomain.empty() && !gSecrets.matrixRoomId.empty() && !gSecrets.matrixAccessToken.empty())
     {
-        std::cout << "[INIT] Matrix module activated (Pending implementation)." << std::endl;
+        gMatrixClient = new Matrix::Client(gSecrets.matrixDomain, gSecrets.matrixAccessToken);
+        std::cout << "[INIT] Matrix module activated." << std::endl;
     }
     else
     {
@@ -168,11 +171,16 @@ void App_Init()
         std::string statusText = gIsOpen ? "🟢OPEN" : "🔴CLOSED";
         std::cout << "[SYSTEM] Status changed to: " << statusText << std::endl;
 
-        std::string msg = "*[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
+        std::string tgMsg = "*[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
+        std::string matrixMsg = "[Essembly status update]\n\nStatus: " + statusText + "\n\n#essembly";
 
         if (gTgBot)
         {
-            gTgBot->sendMarkdownMessage(gSecrets.tgChatId, msg);
+            gTgBot->sendMarkdownMessage(gSecrets.tgChatId, tgMsg);
+        }
+        if (gMatrixClient)
+        {
+            gMatrixClient->sendMessage(gSecrets.matrixRoomId, matrixMsg);
         }
     }
 
@@ -190,11 +198,16 @@ void App_Update()
             std::string statusText = gIsOpen ? "🟢OPEN" : "🔴CLOSED";
             std::cout << "[SYSTEM] Status changed to: " << statusText << std::endl;
 
-            std::string msg = "[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
+            std::string tgMsg = "*[Essembly status update]*\n\nStatus: " + statusText + "\n\n#essembly\n@essembly\\_status";
+            std::string matrixMsg = "[Essembly status update]\n\nStatus: " + statusText + "\n\n#essembly";
 
             if (gTgBot)
             {
-                gTgBot->sendMarkdownMessage(gSecrets.tgChatId, msg);
+                gTgBot->sendMarkdownMessage(gSecrets.tgChatId, tgMsg);
+            }
+            if (gMatrixClient)
+            {
+                gMatrixClient->sendMessage(gSecrets.matrixRoomId, matrixMsg);
             }
         }
     }
@@ -203,13 +216,13 @@ void App_Update()
 void App_Shutdown()
 {
     if (gTgBot)
-    {
         delete gTgBot;
-    }
+    if (gMatrixClient)
+        delete gMatrixClient;
+
     curl_easy_cleanup(gCurl);
     curl_global_cleanup();
 }
-
 int main()
 {
     App_Init();
