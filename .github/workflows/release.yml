@@ -48,7 +48,7 @@ jobs:
       shell: pwsh
       run: |
         cd ${{github.workspace}}/build
-        Compress-Archive -Path ${{ matrix.artifact_name }} -DestinationPath ..\${{ matrix.asset_name }}
+        Compress-Archive -Path "Release\${{ matrix.artifact_name }}" -DestinationPath ..\${{ matrix.asset_name }}
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
